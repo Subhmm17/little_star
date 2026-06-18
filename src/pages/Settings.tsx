@@ -5,6 +5,7 @@ import type { Student } from '../types';
 import { SESSIONS } from '../types';
 import { Settings as SettingsIcon, Upload, Trash2, Database, Download, AlertTriangle, CheckCircle, TrendingUp, ArrowRight, X } from 'lucide-react';
 import { exportAllStudentsExcel } from '../utils/exportExcel';
+import { useAuth } from '../contexts/AuthContext';
 
 const NEXT_CLASS: Record<string, string> = {
   'Pre-Primary': 'Nursery', 'Nursery': 'KG', 'KG': '1',
@@ -14,6 +15,7 @@ const NEXT_CLASS: Record<string, string> = {
 };
 
 export default function Settings() {
+  const { syncNow } = useAuth();
   const [msg, setMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [importing, setImporting] = useState(false);
   const [udiseImporting, setUdiseImporting] = useState(false);
@@ -50,6 +52,7 @@ export default function Settings() {
         added++;
       }
       await addAuditLog('Imported', 'Database', undefined, `Imported ${added} students, skipped ${skipped}`);
+      await syncNow();
       showMsg('success', `Imported ${added} students. Skipped ${skipped} (duplicates or missing data).`);
     } catch {
       showMsg('error', 'Failed to import. Please check the file format.');
@@ -75,6 +78,7 @@ export default function Settings() {
         added++;
       }
       await addAuditLog('Imported', 'Database', undefined, `UDISE Import: ${added} students added, ${skipped} skipped`);
+      await syncNow();
       showMsg('success', `UDISE Import complete: ${added} students added. ${skipped} skipped (already exist or no name).`);
     } catch {
       showMsg('error', 'Failed to import UDISE file. Download the Excel file from the government portal and try again.');
@@ -122,6 +126,7 @@ export default function Settings() {
       }
       await addAuditLog('Updated', 'Database', undefined,
         `Bulk promotion ${fromSession}→${toSession}: ${promoted} promoted, ${graduated} marked TC Issued`);
+      await syncNow();
       showMsg('success', `Promotion complete! ${promoted} students moved up, ${graduated} Class 12 students marked as TC Issued.`);
       setPreview(null);
     } catch {
