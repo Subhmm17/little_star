@@ -137,6 +137,8 @@ export default function StudentProfile() {
           <InfoRow label="Mother's Name" value={student.motherName} />
           <InfoRow label="Parent Mobile" value={student.parentMobile} icon={<Phone className="w-3.5 h-3.5" />} />
           <InfoRow label="Alternate Mobile" value={student.alternateMobile} icon={<Phone className="w-3.5 h-3.5" />} />
+          <InfoRow label="Father's Aadhaar" value={student.fatherAadhaar} />
+          <InfoRow label="Mother's Aadhaar" value={student.motherAadhaar} />
         </InfoSection>
 
         {/* Government IDs */}
@@ -144,6 +146,7 @@ export default function StudentProfile() {
           <InfoRow label="PEN Number" value={student.penNumber} missing={!student.penNumber} />
           <InfoRow label="APAAR ID" value={student.apaarId} missing={!student.apaarId} />
           <InfoRow label="SSSM ID" value={student.sssmId} missing={!student.sssmId} />
+          <InfoRow label="Student Aadhaar" value={student.studentAadhaar} />
         </InfoSection>
 
         {/* Address */}
@@ -155,6 +158,17 @@ export default function StudentProfile() {
           <InfoRow label="Pincode" value={student.pincode} />
         </InfoSection>
       </div>
+
+      {/* Bank Details */}
+      {(student.bankAccountNumber || student.bankIfscCode || student.bankName) && (
+        <InfoSection title="Bank Details" icon={IdCard}>
+          <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-gray-50 dark:divide-gray-700">
+            <InfoRow label="Account Number" value={student.bankAccountNumber} />
+            <InfoRow label="IFSC Code" value={student.bankIfscCode} />
+            <InfoRow label="Bank Name" value={student.bankName} />
+          </div>
+        </InfoSection>
+      )}
 
       {/* School Info */}
       <InfoSection title="School Information" icon={BookOpen}>

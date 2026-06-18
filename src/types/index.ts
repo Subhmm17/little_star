@@ -26,6 +26,13 @@ export interface Student {
   penNumber?: string;
   apaarId?: string;
   sssmId?: string;
+  studentAadhaar?: string;
+  fatherAadhaar?: string;
+  motherAadhaar?: string;
+  // Bank Details
+  bankAccountNumber?: string;
+  bankIfscCode?: string;
+  bankName?: string;
   // Address
   fullAddress?: string;
   village?: string;

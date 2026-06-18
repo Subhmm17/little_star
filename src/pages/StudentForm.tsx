@@ -11,6 +11,8 @@ const EMPTY: Omit<Student, 'id' | 'createdAt' | 'updatedAt'> = {
   dateOfBirth: '', gender: 'Male', category: undefined, bloodGroup: undefined,
   fatherName: '', motherName: '', parentMobile: '', alternateMobile: '',
   penNumber: '', apaarId: '', sssmId: '',
+  studentAadhaar: '', fatherAadhaar: '', motherAadhaar: '',
+  bankAccountNumber: '', bankIfscCode: '', bankName: '',
   fullAddress: '', village: '', district: '', state: 'Madhya Pradesh', pincode: '',
   admissionDate: new Date().toISOString().split('T')[0],
   status: 'Active', remarks: '', photo: undefined,
@@ -105,7 +107,7 @@ export default function StudentForm() {
     reader.readAsDataURL(file);
   }
 
-  const tabs = ['Basic Info', 'Parent Info', 'Govt IDs', 'Address', 'School Info'];
+  const tabs = ['Basic Info', 'Parent Info', 'Govt IDs', 'Address', 'Bank Info', 'School Info'];
 
   if (success) {
     return (
@@ -250,6 +252,12 @@ export default function StudentForm() {
                 <Field label="Alternate Mobile">
                   <input value={form.alternateMobile || ''} onChange={e => set('alternateMobile', e.target.value)} className={input()} placeholder="Alternate number" maxLength={10} />
                 </Field>
+                <Field label="Father's Aadhaar (optional)">
+                  <input value={form.fatherAadhaar || ''} onChange={e => set('fatherAadhaar', e.target.value)} className={input()} placeholder="12-digit Aadhaar number" maxLength={12} />
+                </Field>
+                <Field label="Mother's Aadhaar (optional)">
+                  <input value={form.motherAadhaar || ''} onChange={e => set('motherAadhaar', e.target.value)} className={input()} placeholder="12-digit Aadhaar number" maxLength={12} />
+                </Field>
               </div>
             )}
 
@@ -263,6 +271,9 @@ export default function StudentForm() {
                 </Field>
                 <Field label="SSSM ID">
                   <input value={form.sssmId || ''} onChange={e => set('sssmId', e.target.value)} className={input()} placeholder="Samagra Social Security Mission ID" />
+                </Field>
+                <Field label="Student Aadhaar (optional)">
+                  <input value={form.studentAadhaar || ''} onChange={e => set('studentAadhaar', e.target.value)} className={input()} placeholder="12-digit Aadhaar number" maxLength={12} />
                 </Field>
               </div>
             )}
@@ -293,6 +304,20 @@ export default function StudentForm() {
             )}
 
             {tab === 4 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Field label="Bank Account Number">
+                  <input value={form.bankAccountNumber || ''} onChange={e => set('bankAccountNumber', e.target.value)} className={input()} placeholder="Account number" />
+                </Field>
+                <Field label="IFSC Code">
+                  <input value={form.bankIfscCode || ''} onChange={e => set('bankIfscCode', e.target.value.toUpperCase())} className={input()} placeholder="e.g. SBIN0001234" maxLength={11} />
+                </Field>
+                <Field label="Bank Name">
+                  <input value={form.bankName || ''} onChange={e => set('bankName', e.target.value)} className={input()} placeholder="e.g. State Bank of India" />
+                </Field>
+              </div>
+            )}
+
+            {tab === 5 && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Field label="Admission Date *" error={errors.admissionDate}>
                   <input type="date" value={form.admissionDate} onChange={e => set('admissionDate', e.target.value)} className={input(errors.admissionDate)} />
