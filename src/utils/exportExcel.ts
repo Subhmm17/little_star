@@ -74,6 +74,86 @@ export function exportAllStudentsCSV(students: Student[]): void {
   saveAs(new Blob([csv], { type: 'text/csv;charset=utf-8;' }), `School_Database_${new Date().toISOString().split('T')[0]}.csv`);
 }
 
+// ── UDISE Government Portal Import ───────────────────────────────────────────
+const UDISE_CLASS_MAP: Record<string, string> = {
+  'PP-3': 'Pre-Primary', 'PP-2': 'Nursery', 'PP-1': 'KG',
+  'I': '1', 'II': '2', 'III': '3', 'IV': '4', 'V': '5',
+  'VI': '6', 'VII': '7', 'VIII': '8', 'IX': '9', 'X': '10',
+  'XI': '11', 'XII': '12',
+};
+
+function parseUDISECategory(cat: string): Student['category'] | undefined {
+  if (!cat || cat === 'NA') return undefined;
+  if (cat.includes('GENERAL')) return 'General';
+  if (cat.includes('OBC')) return 'OBC';
+  if (cat.includes('-SC')) return 'SC';
+  if (cat.includes('-ST')) return 'ST';
+  return 'General';
+}
+
+export async function importFromUDISE(file: File): Promise<Partial<Student>[]> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = e.target?.result;
+        const wb = XLSX.read(data, { type: 'binary' });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const rawRows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' }) as string[][];
+
+        // Find the header row — the one that contains "Name" and "Class"
+        let headerIdx = -1;
+        for (let i = 0; i < rawRows.length; i++) {
+          const row = rawRows[i].map(c => String(c).trim());
+          if (row.includes('Name') && row.includes('Class')) { headerIdx = i; break; }
+        }
+        if (headerIdx === -1) { reject(new Error('Header row not found')); return; }
+
+        const headers = rawRows[headerIdx].map(c => String(c).trim());
+        const get = (row: string[], col: string) => {
+          const idx = headers.indexOf(col);
+          return idx >= 0 ? String(row[idx] || '').trim() : '';
+        };
+
+        const today = new Date().toISOString().split('T')[0];
+        const students: Partial<Student>[] = [];
+
+        for (const rawRow of rawRows.slice(headerIdx + 1)) {
+          const row = rawRow.map(c => String(c));
+          const name = get(row, 'Name');
+          if (!name || name === 'Name') continue;
+
+          const rawClass = get(row, 'Class');
+          const sssmRaw = get(row, 'Student State Code');
+
+          students.push({
+            studentName: name,
+            scholarNumber: get(row, 'Student PEN'),
+            admissionNumber: '',
+            class: UDISE_CLASS_MAP[rawClass] ?? rawClass,
+            section: get(row, 'Section'),
+            academicSession: '2025-26',
+            dateOfBirth: '',
+            gender: (get(row, 'Gender') as Student['gender']) || 'Male',
+            category: parseUDISECategory(get(row, 'Social Category')),
+            fatherName: get(row, 'Father Name'),
+            motherName: get(row, 'Mother Name'),
+            parentMobile: '',
+            penNumber: get(row, 'Student PEN'),
+            sssmId: sssmRaw !== 'NA' ? sssmRaw : '',
+            apaarId: '',
+            admissionDate: today,
+            status: 'Active',
+          });
+        }
+        resolve(students);
+      } catch (err) { reject(err); }
+    };
+    reader.onerror = () => reject(new Error('Failed to read file'));
+    reader.readAsBinaryString(file);
+  });
+}
+
 export async function importFromExcel(file: File): Promise<Partial<Student>[]> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();

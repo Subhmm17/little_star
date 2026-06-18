@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { db, addAuditLog } from '../db/database';
-import { importFromExcel } from '../utils/exportExcel';
+import { importFromExcel, importFromUDISE } from '../utils/exportExcel';
 import type { Student } from '../types';
 import { Settings as SettingsIcon, Upload, Trash2, Database, Download, AlertTriangle, CheckCircle } from 'lucide-react';
 import { exportAllStudentsExcel } from '../utils/exportExcel';
@@ -8,7 +8,9 @@ import { exportAllStudentsExcel } from '../utils/exportExcel';
 export default function Settings() {
   const [msg, setMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [importing, setImporting] = useState(false);
+  const [udiseImporting, setUdiseImporting] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const udiseFileRef = useRef<HTMLInputElement>(null);
 
   function showMsg(type: 'success' | 'error', text: string) {
     setMsg({ type, text });
@@ -39,6 +41,31 @@ export default function Settings() {
       showMsg('error', 'Failed to import. Please check the file format.');
     }
     setImporting(false);
+    e.target.value = '';
+  }
+
+  async function handleUDISEImport(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUdiseImporting(true);
+    try {
+      const rows = await importFromUDISE(file);
+      let added = 0, skipped = 0;
+      for (const row of rows) {
+        if (!row.studentName) { skipped++; continue; }
+        if (row.penNumber) {
+          const exists = await db.students.where('penNumber').equals(row.penNumber).first();
+          if (exists) { skipped++; continue; }
+        }
+        await db.students.add({ ...row, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() } as Student);
+        added++;
+      }
+      await addAuditLog('Imported', 'Database', undefined, `UDISE Import: ${added} students added, ${skipped} skipped`);
+      showMsg('success', `UDISE Import complete: ${added} students added. ${skipped} skipped (already exist or no name).`);
+    } catch {
+      showMsg('error', 'Failed to import UDISE file. Download the Excel file from the government portal and try again.');
+    }
+    setUdiseImporting(false);
     e.target.value = '';
   }
 
@@ -81,6 +108,34 @@ export default function Settings() {
           <p className="text-sm">{msg.text}</p>
         </div>
       )}
+
+      {/* UDISE Import */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-5">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-9 h-9 bg-purple-100 dark:bg-purple-900/40 rounded-lg flex items-center justify-center">
+            <Upload className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+          </div>
+          <div>
+            <h2 className="font-semibold text-gray-900 dark:text-white">Import from UDISE / Govt. Portal</h2>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Upload the Excel file downloaded from the government school portal</p>
+          </div>
+        </div>
+        <div className="border-2 border-dashed border-purple-200 dark:border-purple-800 rounded-xl p-6 text-center">
+          <Upload className="w-8 h-8 text-purple-300 dark:text-purple-700 mx-auto mb-2" />
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Download "List of All Students" from the portal</p>
+          <p className="text-xs text-gray-400 dark:text-gray-500 mb-3">Supports the Excel export from UDISE / state school portals</p>
+          <label className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700 transition-colors cursor-pointer">
+            <Upload className="w-4 h-4" />
+            {udiseImporting ? 'Importing...' : 'Choose Portal File'}
+            <input ref={udiseFileRef} type="file" accept=".xlsx,.xls,.csv" className="hidden" onChange={handleUDISEImport} disabled={udiseImporting} />
+          </label>
+        </div>
+        <div className="mt-3 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg space-y-1">
+          <p className="text-xs text-purple-700 dark:text-purple-300 font-medium">Auto-maps these portal columns:</p>
+          <p className="text-xs text-purple-600 dark:text-purple-400 font-mono">Class (PP-3→Pre-Primary, PP-2→Nursery, PP-1→KG, I→1 …) · Section · Name · Gender</p>
+          <p className="text-xs text-purple-600 dark:text-purple-400 font-mono">Student PEN → PEN Number · Student State Code → SSSM ID · Father/Mother Name · Category</p>
+        </div>
+      </div>
 
       {/* Import */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-5">
