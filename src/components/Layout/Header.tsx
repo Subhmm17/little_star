@@ -54,17 +54,17 @@ export default function Header({ darkMode, onToggleDark, sidebarWidth }: HeaderP
           placeholder="Search students by name, scholar no, PEN, APAAR..."
           value={query}
           onChange={(e) => handleSearch(e.target.value)}
-          onBlur={() => setTimeout(() => setShowResults(false), 200)}
-          onFocus={() => query.length >= 2 && setShowResults(true)}
-          className="w-full pl-10 pr-4 py-2 text-sm bg-gray-100 dark:bg-gray-800 border border-transparent focus:border-blue-400 focus:bg-white dark:focus:bg-gray-700 rounded-lg outline-none transition-all dark:text-white"
+          onBlur={e => { setTimeout(() => setShowResults(false), 200); e.currentTarget.style.borderColor = 'transparent'; e.currentTarget.style.backgroundColor = ''; }}
+          onFocus={e => { if (query.length >= 2) setShowResults(true); e.currentTarget.style.borderColor = '#f5a623'; e.currentTarget.style.backgroundColor = 'white'; }}
+          className="w-full pl-10 pr-4 py-2 text-sm bg-gray-100 dark:bg-gray-800 border border-transparent rounded-lg outline-none transition-all dark:text-white"
         />
         {showResults && results.length > 0 && (
           <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden z-50">
             {results.map(r => (
               <button key={r.id} onMouseDown={() => selectResult(r.id)}
                 className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-blue-50 dark:hover:bg-gray-700 text-left transition-colors">
-                <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
-                  <User className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: 'rgba(245,166,35,0.15)' }}>
+                  <User className="w-4 h-4" style={{ color: '#f5a623' }} />
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-900 dark:text-white">{r.name}</p>

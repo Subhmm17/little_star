@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard, Users, GraduationCap, FileText, Download,
-  ClipboardList, Settings, ChevronLeft, ChevronRight, School, BookOpen
+  ClipboardList, Settings, ChevronLeft, ChevronRight, BookOpen
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -25,20 +25,20 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
     <aside
       className={`
         fixed left-0 top-0 h-full z-40 flex flex-col
-        bg-gradient-to-b from-blue-900 to-blue-800
         shadow-xl transition-all duration-300 ease-in-out
         ${collapsed ? 'w-16' : 'w-64'}
       `}
+      style={{ background: 'linear-gradient(180deg, #0d1b35 0%, #152033 100%)' }}
     >
       {/* Logo */}
-      <div className="flex items-center gap-3 px-4 py-5 border-b border-blue-700">
-        <div className="flex-shrink-0 w-9 h-9 bg-white rounded-lg flex items-center justify-center shadow">
-          <School className="w-5 h-5 text-blue-700" />
+      <div className="flex items-center gap-3 px-4 py-5" style={{ borderBottom: '1px solid #1e3358' }}>
+        <div className="flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center shadow" style={{ background: '#f5a623' }}>
+          <GraduationCap className="w-5 h-5" style={{ color: '#0d1b35' }} />
         </div>
         {!collapsed && (
           <div className="overflow-hidden">
             <p className="text-white font-bold text-sm leading-tight">Little Star</p>
-            <p className="text-blue-300 text-xs">Convent School</p>
+            <p className="text-xs font-medium" style={{ color: '#f5a623' }}>Convent School</p>
           </div>
         )}
       </div>
@@ -52,11 +52,12 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
             end={end}
             className={({ isActive }) => `
               flex items-center gap-3 px-4 py-3 mx-2 rounded-lg mb-1
-              transition-all duration-150 group
+              transition-all duration-150 group relative
               ${isActive
-                ? 'bg-white/20 text-white shadow-sm'
-                : 'text-blue-200 hover:bg-white/10 hover:text-white'}
+                ? 'text-white font-semibold'
+                : 'text-slate-300 hover:bg-white/10 hover:text-white'}
             `}
+            style={({ isActive }) => isActive ? { background: 'rgba(245,166,35,0.18)', color: '#f5a623' } : {}}
           >
             <Icon className="w-5 h-5 flex-shrink-0" />
             {!collapsed && (
@@ -75,7 +76,8 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
       {/* Toggle Button */}
       <button
         onClick={onToggle}
-        className="flex items-center justify-center py-3 border-t border-blue-700 text-blue-300 hover:text-white hover:bg-white/10 transition-colors"
+        className="flex items-center justify-center py-3 text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+        style={{ borderTop: '1px solid #1e3358' }}
       >
         {collapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
         {!collapsed && <span className="ml-2 text-sm">Collapse</span>}
