@@ -51,7 +51,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await syncStudentsToSheet(token, sheetId, list);
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Sync failed';
-      setSyncError(msg);
+      // Token expired → clear it so user knows they must re-login
+      if (msg.includes('401') || msg.includes('403')) {
+        localStorage.removeItem('lscs_access_token');
+        setSyncError('Session expired — please sign out and sign in again to sync.');
+      } else {
+        setSyncError('Sync failed: ' + msg);
+      }
       console.error('Sync error:', msg);
     } finally {
       setSyncing(false);

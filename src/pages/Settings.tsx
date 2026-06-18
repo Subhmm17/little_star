@@ -135,6 +135,14 @@ export default function Settings() {
     setPromoting(false);
   }
 
+  async function handleForceSyncAll() {
+    const students = await db.students.toArray();
+    if (students.length === 0) { showMsg('error', 'No students in local database to sync.'); return; }
+    showMsg('success', `Syncing ${students.length} students to Google Drive…`);
+    await syncNow(students);
+    showMsg('success', `Done! ${students.length} students synced to Google Drive. You can now log in on any device.`);
+  }
+
   async function handleBackup() {
     const students = await db.students.toArray();
     exportAllStudentsExcel(students);
@@ -327,17 +335,29 @@ export default function Settings() {
             <Database className="w-5 h-5 text-blue-600 dark:text-blue-400" />
           </div>
           <div>
-            <h2 className="font-semibold text-gray-900 dark:text-white">Database Backup</h2>
-            <p className="text-xs text-gray-500 dark:text-gray-400">Download a complete backup of all student data</p>
+            <h2 className="font-semibold text-gray-900 dark:text-white">Backup &amp; Sync</h2>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Download backup or force sync all data to Google Drive</p>
           </div>
         </div>
-        <button
-          onClick={handleBackup}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <Download className="w-4 h-4" />
-          Download Full Backup (Excel)
-        </button>
+        <div className="flex flex-wrap gap-3">
+          <button
+            onClick={handleBackup}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <Download className="w-4 h-4" />
+            Download Full Backup (Excel)
+          </button>
+          <button
+            onClick={handleForceSyncAll}
+            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors"
+          >
+            <CheckCircle className="w-4 h-4" />
+            Force Sync All Data to Google Drive
+          </button>
+        </div>
+        <p className="text-xs text-gray-400 dark:text-gray-500 mt-3">
+          If another device isn't showing data: sign out &amp; sign back in first (refreshes your session), then click Force Sync.
+        </p>
       </div>
 
       {/* Danger Zone */}
