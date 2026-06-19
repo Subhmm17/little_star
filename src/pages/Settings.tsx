@@ -10,8 +10,7 @@ import { useAuth } from '../contexts/AuthContext';
 const NEXT_CLASS: Record<string, string> = {
   'Pre-Primary': 'Nursery', 'Nursery': 'KG', 'KG': '1',
   '1': '2', '2': '3', '3': '4', '4': '5', '5': '6',
-  '6': '7', '7': '8', '8': '9', '9': '10', '10': '11', '11': '12',
-  '12': 'GRADUATED',
+  '6': '7', '7': '8', '8': 'GRADUATED',
 };
 
 export default function Settings() {
@@ -127,7 +126,7 @@ export default function Settings() {
       await addAuditLog('Updated', 'Database', undefined,
         `Bulk promotion ${fromSession}→${toSession}: ${promoted} promoted, ${graduated} marked TC Issued`);
       await syncNow();
-      showMsg('success', `Promotion complete! ${promoted} students moved up, ${graduated} Class 12 students marked as TC Issued.`);
+      showMsg('success', `Promotion complete! ${promoted} students moved up, ${graduated} Class 8 students marked as TC Issued.`);
       setPreview(null);
     } catch {
       showMsg('error', 'Promotion failed. Please try again.');
@@ -320,7 +319,7 @@ export default function Settings() {
                   {promoting ? 'Promoting...' : `Confirm — Promote All ${preview.reduce((a, r) => a + r.count, 0)} Students to ${toSession}`}
                 </button>
                 <p className="text-xs text-amber-700 dark:text-amber-400 text-center mt-2">
-                  This will update each student's class and session. Class 12 students will be marked as TC Issued.
+                  This will update each student's class and session. Class 8 students will be marked as TC Issued (passed out).
                 </p>
               </div>
             )}
