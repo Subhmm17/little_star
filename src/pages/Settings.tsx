@@ -142,6 +142,23 @@ export default function Settings() {
     showMsg('success', `Done! ${students.length} students synced to Google Drive. You can now log in on any device.`);
   }
 
+  async function handleFixMisassigned() {
+    const VALID_CLASSES = ['Pre-Primary', 'Nursery', 'KG', '1', '2', '3', '4', '5', '6', '7', '8'];
+    const all = await db.students.toArray();
+    const misassigned = all.filter(s => !VALID_CLASSES.includes(s.class) && s.status !== 'TC Issued');
+    if (misassigned.length === 0) {
+      showMsg('success', 'No misassigned students found — everything looks correct!');
+      return;
+    }
+    for (const s of misassigned) {
+      await db.students.update(s.id!, { class: '8', status: 'TC Issued', updatedAt: new Date().toISOString() });
+    }
+    await addAuditLog('Updated', 'Student', undefined,
+      `Fixed ${misassigned.length} students incorrectly promoted beyond Class 8 — marked as TC Issued`);
+    await syncNow();
+    showMsg('success', `Fixed ${misassigned.length} student(s) — moved back to Class 8 and marked as TC Issued.`);
+  }
+
   async function handleBackup() {
     const students = await db.students.toArray();
     exportAllStudentsExcel(students);
@@ -357,6 +374,30 @@ export default function Settings() {
         <p className="text-xs text-gray-400 dark:text-gray-500 mt-3">
           If another device isn't showing data: sign out &amp; sign back in first (refreshes your session), then click Force Sync.
         </p>
+      </div>
+
+      {/* One-time Fix */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-orange-200 dark:border-orange-800/50 p-5">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="w-9 h-9 bg-orange-100 dark:bg-orange-900/40 rounded-lg flex items-center justify-center">
+            <AlertTriangle className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+          </div>
+          <div>
+            <h2 className="font-semibold text-gray-900 dark:text-white">Fix Misassigned Students</h2>
+            <p className="text-xs text-gray-500 dark:text-gray-400">For students incorrectly promoted beyond Class 8</p>
+          </div>
+        </div>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+          If you ran bulk promotion before the Class 8 limit was set, some Class 8 students may have been moved to "Class 9".
+          This will find any student in a class above 8 and mark them as <strong>TC Issued</strong> (passed out).
+        </p>
+        <button
+          onClick={handleFixMisassigned}
+          className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white text-sm rounded-lg hover:bg-orange-700 transition-colors"
+        >
+          <CheckCircle className="w-4 h-4" />
+          Fix Students Promoted Beyond Class 8
+        </button>
       </div>
 
       {/* Danger Zone */}
